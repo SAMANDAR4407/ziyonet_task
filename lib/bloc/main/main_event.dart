@@ -3,7 +3,11 @@ part of 'main_bloc.dart';
 @immutable
 abstract class MainEvent {}
 
-class LoadInfo extends MainEvent {}
+class Start extends MainEvent {
+  final int? page;
+
+  Start({required this.page});
+}
 
 class Filter extends MainEvent {
   final int? category_id;

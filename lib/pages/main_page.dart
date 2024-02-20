@@ -1,4 +1,4 @@
-import 'package:dio/dio.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,16 +7,20 @@ import 'package:ziyonet_task/bloc/main/main_bloc.dart';
 import 'package:ziyonet_task/widgets/filter_bottomsheet.dart';
 import 'package:ziyonet_task/widgets/main_item.dart';
 
+import '../utils.dart';
 import 'detail_page.dart';
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  const MainPage({super.key, this.query});
+
+  final Map<String, dynamic>? query;
 
   @override
   State<MainPage> createState() => _MainPageState();
 }
 
 class _MainPageState extends State<MainPage> {
+
   final levelController = TextEditingController();
   final typeController = TextEditingController();
   final catController = TextEditingController();
@@ -31,60 +35,67 @@ class _MainPageState extends State<MainPage> {
   List<DropdownMenuEntry> categories = [];
   List<DropdownMenuEntry> types = [];
 
-  int page = 1;
+  int startPage = 1;
+  int filterPage = 1;
 
-  int? categoryId(String name){
-    int? id;
-    for (var value in categories) {
-      if(value.label == name) id = value.value;
-    }
-    return id;
-  }
-  int? levelId(String name){
-    int? id;
-    for (var value in levels) {
-      if(value.label == name) id = value.value;
-    }
-    return id;
-  }
-  int? languageId(String name){
-    int? id;
-    for (var value in languages) {
-      if(value.label == name) id = value.value;
-    }
-    return id;
-  }
-  int? typeId(String name){
-    int? id;
-    for (var value in types) {
-      if(value.label == name) id = value.value;
-    }
-    return id;
-  }
-
-  
   @override
   void initState() {
-    BlocProvider.of<MainBloc>(context).add(LoadInfo());
+    if(widget.query != null){
+      BlocProvider.of<MainBloc>(context).add(
+          Filter(
+              category_id: widget.query?['category_id'],
+              search_by_name: null,
+              search_by_desc: null,
+              type_id: null,
+              level_id: null,
+              language_id: null,
+              page: null,
+              newFilter: true
+          )
+      );
+    } else {
+      BlocProvider.of<MainBloc>(context).add(Start(page: null));
+    }
     scrollController.addListener(() {
       final position = scrollController.offset;
       final maxExtent = scrollController.position.maxScrollExtent;
-      if (position / maxExtent > 0.99) {
-        if(page == BlocProvider.of<MainBloc>(context).totalPage) {
+
+      if (position / maxExtent > 0.9999) {
+        if(filterPage == BlocProvider.of<MainBloc>(context).totalPage) {
+          return;
+        } else if(!BlocProvider.of<MainBloc>(context).newFilter){
+          BlocProvider.of<MainBloc>(context).add(Start(page: ++startPage));
           return;
         } else {
-          BlocProvider.of<MainBloc>(context).add(
-              Filter(
-                  category_id: categoryId(catController.text),
-                  search_by_name: titleController.text,
-                  search_by_desc: descController.text,
-                  type_id: typeId(typeController.text),
-                  level_id: levelId(levelController.text),
-                  language_id: languageId(langController.text),
-                  page: ++page,
-                  newFilter: false
-              )
-          );
+          startPage = 1;
+          if(widget.query != null){
+            BlocProvider.of<MainBloc>(context).add(
+                Filter(
+                    category_id: widget.query?['category_id'],
+                    search_by_name: null,
+                    search_by_desc: null,
+                    type_id: null,
+                    level_id: null,
+                    language_id: null,
+                    page: ++filterPage,
+                    newFilter: false
+                )
+            );
+          }
+           else {
+             BlocProvider.of<MainBloc>(context).add(
+                Filter(
+                    category_id: categoryId(catController.text, categories),
+                    search_by_name: titleController.text,
+                    search_by_desc: descController.text,
+                    type_id: typeId(typeController.text, types),
+                    level_id: levelId(levelController.text, levels),
+                    language_id: languageId(langController.text, languages),
+                    page: ++filterPage,
+                    newFilter: false
+                )
+            );
+          }
         }
       }
     });
@@ -94,14 +105,14 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.white.withOpacity(0.95),
       appBar: AppBar(
         backgroundColor: const Color(0xff4a78c0),
         scrolledUnderElevation: 0,
         title: SizedBox(
           width: 120,
-          child: SvgPicture.network(
-            'https://library.ziyonet.uz/images/logo/logo-white-ru.svg',
+          child: SvgPicture.asset(
+            'assets/images/logo-blue-uz.svg',
             colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
           ),
         ),
@@ -155,6 +166,11 @@ class _MainPageState extends State<MainPage> {
       body: BlocBuilder<MainBloc, MainState>(
         builder: (context, state) {
 
+          languages.clear();
+          categories.clear();
+          levels.clear();
+          types.clear();
+
           for (var lang in state.languages) {
             languages.add(DropdownMenuEntry(value: lang.id, label: lang.name));
           }
@@ -168,24 +184,16 @@ class _MainPageState extends State<MainPage> {
             categories.add(DropdownMenuEntry(value: category.id, label: category.name));
           }
 
-          if (state.status == EnumStatus.initial) {
-            return Center(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 50),
-                child: Image.network('https://www.pngall.com/wp-content/uploads/14/Welcome.png'),
-              ),
-            );
-          }
           if(state.status == EnumStatus.fail){
             return Center(
-              child: Material(
-                elevation: 5,
-                borderRadius: BorderRadius.circular(15),
-                child: Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: Text(state.message, style: const TextStyle(color: Colors.red)),
-                ),
-              )
+                child: Material(
+                  elevation: 5,
+                  borderRadius: BorderRadius.circular(15),
+                  child: Padding(
+                    padding: const EdgeInsets.all(15),
+                    child: Text(state.message, style: const TextStyle(color: Colors.red)),
+                  ),
+                )
             );
           }
           return Column(
@@ -200,7 +208,7 @@ class _MainPageState extends State<MainPage> {
                     final model = state.materials[i];
                     return GestureDetector(
                       onTap: (){
-                        Navigator.push(context, CupertinoPageRoute(builder: (context) => DetailPage(book_id: model.id!)));
+                        Navigator.push(context, CupertinoPageRoute(builder: (context) => DetailPage(bookId: model.id!)));
                       },
                       child: MainItem(model: model),
                     );

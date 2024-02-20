@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:retrofit/http.dart';
 import 'package:ziyonet_task/models/book_detail_response.dart';
 import 'package:ziyonet_task/models/category_response.dart';
+import 'package:ziyonet_task/models/category_with_quantity.dart';
 import 'package:ziyonet_task/models/lang_response.dart';
 import 'package:ziyonet_task/models/level_response.dart';
 
@@ -32,4 +33,7 @@ abstract class ApiService{
 
   @GET('/library/languages')
   Future<LangResponse> getAllLanguages();
+
+  @GET('/library/categories-with-quantity')
+  Future<CategoryWithQuantity> getCategoriesWithQuantity();
 }

@@ -79,9 +79,6 @@ class FilterBottomSheet extends StatelessWidget {
               hintText: 'Уровень образования',
               dropdownMenuEntries: levels,
               menuStyle: const MenuStyle(surfaceTintColor: MaterialStatePropertyAll(Colors.white)),
-              onSelected: (value) {
-                //
-              },
             ),
           ),
           const SizedBox(height: 10),
@@ -93,9 +90,6 @@ class FilterBottomSheet extends StatelessWidget {
               hintText: 'Тип',
               dropdownMenuEntries: types,
               menuStyle: const MenuStyle(surfaceTintColor: MaterialStatePropertyAll(Colors.white)),
-              onSelected: (value) {
-                //
-              },
             ),
           ),
           const SizedBox(height: 10),
@@ -107,9 +101,6 @@ class FilterBottomSheet extends StatelessWidget {
               hintText: 'Категория',
               dropdownMenuEntries: categories,
               menuStyle: const MenuStyle(surfaceTintColor: MaterialStatePropertyAll(Colors.white)),
-              onSelected: (value) {
-                //
-              },
             ),
           ),
           const SizedBox(height: 10),
@@ -121,9 +112,6 @@ class FilterBottomSheet extends StatelessWidget {
               hintText: 'Язык',
               dropdownMenuEntries: languages,
               menuStyle: const MenuStyle(surfaceTintColor: MaterialStatePropertyAll(Colors.white)),
-              onSelected: (value) {
-                //
-              },
             ),
           ),
           const SizedBox(height: 20),
@@ -152,7 +140,7 @@ class FilterBottomSheet extends StatelessWidget {
                 backgroundColor: MaterialStatePropertyAll(Color(0xff4a78c0)),
                 fixedSize: MaterialStatePropertyAll(Size(300, 25)),
               ),
-              child: const Text('Apply'),
+              child: const Text('Отправить'),
             ),
           ),
           const SizedBox(height: 20),
